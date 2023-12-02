@@ -6,6 +6,7 @@ import (
 )
 
 var textDigitReplacer = strings.NewReplacer("one", "1", "two", "2", "three", "3", "four", "4", "five", "5", "six", "6", "seven", "7", "eight", "8", "nine", "9")
+var reversedTextDigitReplacer = strings.NewReplacer("eno", "1", "owt", "2", "eerht", "3", "ruof", "4", "evif", "5", "xis", "6", "neves", "7", "thgie", "8", "enin", "9")
 
 // O(n)
 // Start from the front, the first gigit we see - return it and cease
@@ -29,38 +30,17 @@ func getFirstDigit(str string, includeWrittenDigits bool) int {
 	return 0
 }
 
-// O(n^2) I think :(
+// O(n)
 // Start from the back, the first digit we see - we return it and stop
-// This is trickier to do that front to back because we need to look ahead to the end of the string again
-// to see if we have any words...
 func getLastDigit(str string, includeWrittenDigits bool) int {
-	for i := len(str) - 1; i >= 0; i -= 1 {
-		char := str[i]
+	reversedInput := reverse(str)
+
+	if includeWrittenDigits {
+		reversedInput = reversedTextDigitReplacer.Replace(reversedInput)
+	}
+
+	for _, char := range reversedInput {
 		digit, err := strconv.ParseInt(string(char), 10, 0)
-
-		if err != nil && includeWrittenDigits {
-			// This errored because the character wasn't a number, if that's the case lets
-			// create a new str from now until the end and replace the words in it with digits and try again
-			// This means we end up replacing word digits from their first occurence right to left, rather than left to right
-			// i.e. twone -> tw1 instead of 2ne
-			// We could potentially avoid this nested looping (worst case O(n^2)) by
-			// Adding a seperate replacer for reversed strings (eno -> 1, owt -> two)
-			// and simply running that against the reversed string and calling getFirst on it lmao
-
-			// Now that we are doing a ParseInt on a large string, we need to make sure
-			// that we remove non-digit characters at this point
-			subStr := strings.Map(func(char rune) rune {
-				if char >= '0' && char <= '9' {
-					return char
-				}
-
-				// A negative return value drops the character!
-				return -1
-			}, textDigitReplacer.Replace(str[i:]))
-
-			digit, err = strconv.ParseInt(subStr, 10, 0)
-
-		}
 
 		if err != nil {
 			continue
@@ -93,14 +73,18 @@ func GetCalibrationValueForDocument(calibrationDocument string, includeWrittenDi
 	return sumOfCalibrationValues
 }
 
-func filter[T any](arr []T, predicate func(T) bool) []T {
-	filteredArr := []T{}
-
-	for _, value := range arr {
-		if predicate(value) {
-			filteredArr = append(filteredArr, value)
-		}
+func reverse(str string) string {
+	if len(str) <= 1 {
+		return str
 	}
 
-	return filteredArr
+	strSlice := strings.Split(str, "")
+
+	for startIndex, endIndex := 0, len(strSlice)-1; startIndex < endIndex; startIndex, endIndex = startIndex+1, endIndex-1 {
+		endIndexStr := strSlice[endIndex]
+		strSlice[endIndex] = strSlice[startIndex]
+		strSlice[startIndex] = endIndexStr
+	}
+
+	return strings.Join(strSlice, "")
 }
