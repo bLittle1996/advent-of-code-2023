@@ -10,10 +10,9 @@ const invalidSymbol rune = '.'
 const gearSymbol rune = '*'
 
 type Engine struct {
-	rawSchematic string
-	Schematic    []string
-	parts        []part
-	gears        []gear
+	Schematic []string
+	Parts     []part
+	Gears     []gear
 }
 
 type part struct {
@@ -33,26 +32,43 @@ func NewEngine(rawSchematic string) Engine {
 	lines := strings.Split(strings.Trim(rawSchematic, "\n"), "\n")
 
 	engine := Engine{
-		rawSchematic: rawSchematic,
-		Schematic:    lines,
+		Schematic: lines,
 	}
 
 	// Populate the parts and gears slices
-	engine.computeParts()
+	parts, gears := getPartsAndGears(lines)
+	engine.Parts = parts
 	// At this point, we have only valid parts, but our gears might not be valid gears
-	// Let's validate them
-	engine.gears = getValidGears(engine)
+	engine.Gears = getValidGears(parts, gears)
 
 	return engine
 }
 
-// Populates the parts and gears slices as well as the PartNumbers slice.
-func (engine *Engine) computeParts() {
-	if engine == nil {
-		return
+func (engine Engine) GetPartNumberSum() int {
+	sum := 0
+
+	for _, part := range engine.Parts {
+		sum += part.Value
 	}
 
-	for i, line := range engine.Schematic {
+	return sum
+}
+
+func (engine Engine) GetGearRatioSum() int {
+	sum := 0
+
+	for _, gear := range engine.Gears {
+		sum += gear.Ratio
+	}
+
+	return sum
+}
+
+// Populates the parts and gears slices
+func getPartsAndGears(engineSchematics []string) ([]part, []gear) {
+	parts, gears := []part{}, []gear{}
+
+	for i, line := range engineSchematics {
 		numStr := ""
 		startsAtIndex := 0
 		for j, char := range line {
@@ -65,7 +81,7 @@ func (engine *Engine) computeParts() {
 			if isDigit(char) {
 				numStr += string(char)
 			} else if char == gearSymbol {
-				engine.gears = append(engine.gears, gear{
+				gears = append(gears, gear{
 					X: j,
 					Y: i,
 				})
@@ -82,8 +98,8 @@ func (engine *Engine) computeParts() {
 					Value: num,
 				}
 
-				if engine.isValidPart(part) {
-					engine.parts = append(engine.parts, part)
+				if isValidPart(engineSchematics, part) {
+					parts = append(parts, part)
 				}
 
 				// Reset numStr so we can build new numbers
@@ -91,14 +107,16 @@ func (engine *Engine) computeParts() {
 			}
 		}
 	}
+
+	return parts, gears
 }
 
 // Takes the list of gears and compares it against parts, returning a new list of gears containing only ones that are adjacent to two parts.
 // Gear ratios are set in this function as well
-func getValidGears(engine Engine) []gear {
+func getValidGears(parts []part, potentialGears []gear) []gear {
 	var validGears []gear
 
-	for _, gear := range engine.gears {
+	for _, gear := range potentialGears {
 		// We know the coordinate of a gear
 		// We also know the positition of every part in the engine
 		// We just need to compare indicies to see if it is adjacent or not
@@ -108,7 +126,7 @@ func getValidGears(engine Engine) []gear {
 		// ..1
 
 		adjacentParts := []part{}
-		for _, part := range engine.parts {
+		for _, part := range parts {
 			// Since a parts starting digit isn't guaranteed to be right next to the gear,
 			// We'll need to check each coordinate that the number occupies based
 			// off of it's width. offset.e. the number 100 takes up 3 possible spots that can be adjacent
@@ -132,9 +150,9 @@ func getValidGears(engine Engine) []gear {
 	return validGears
 }
 
-func (engine *Engine) isValidPart(part part) bool {
-	rowWidth := len(engine.Schematic[part.Y])
-	rowCount := len(engine.Schematic)
+func isValidPart(engineSchematics []string, part part) bool {
+	rowWidth := len(engineSchematics[part.Y])
+	rowCount := len(engineSchematics)
 
 	canLookLeft := part.X > 0
 	canLookRight := part.X+(part.Width-1) < rowWidth-1
@@ -156,28 +174,28 @@ func (engine *Engine) isValidPart(part part) bool {
 
 	// can look to the left on the rows
 	if canLookLeft {
-		s := engine.Schematic[part.Y][leftBound:part.X]
+		s := engineSchematics[part.Y][leftBound:part.X]
 
 		adjacentLeft = containsSymbol(s)
 	}
 
 	// can look to the right on the rights
 	if canLookRight {
-		s := engine.Schematic[part.Y][part.X+part.Width : rightBound]
+		s := engineSchematics[part.Y][part.X+part.Width : rightBound]
 
 		adjacentRight = containsSymbol(s)
 	}
 
 	// Can look at previous row
 	if canLookUp {
-		s := engine.Schematic[part.Y-1][leftBound:rightBound]
+		s := engineSchematics[part.Y-1][leftBound:rightBound]
 
 		adjacentUp = containsSymbol(s)
 	}
 
 	// can look at next row
 	if canLookDown {
-		s := engine.Schematic[part.Y+1][leftBound:rightBound]
+		s := engineSchematics[part.Y+1][leftBound:rightBound]
 
 		adjacentDown = containsSymbol(s)
 	}
@@ -197,26 +215,6 @@ func containsSymbol(lineSegment string) bool {
 	}
 
 	return false
-}
-
-func PartNumberSum(engine Engine) int {
-	sum := 0
-
-	for _, part := range engine.parts {
-		sum += part.Value
-	}
-
-	return sum
-}
-
-func GearRatioSum(engine Engine) int {
-	sum := 0
-
-	for _, gear := range engine.gears {
-		sum += gear.Ratio
-	}
-
-	return sum
 }
 
 func areCoordinatesAdjacent(x1 int, y1 int, x2 int, y2 int) bool {

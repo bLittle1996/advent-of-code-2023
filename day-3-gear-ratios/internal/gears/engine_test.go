@@ -13,12 +13,12 @@ const testGearRatioAnswer int = 467835
 func TestThatItSolvesTheExampleInput(t *testing.T) {
 	engine := gears.NewEngine(data.TestData)
 
-	if gears.PartNumberSum(engine) != testDataAnswer {
-		t.Errorf("part num sum: Expected %d, received %d", testDataAnswer, gears.PartNumberSum(engine))
+	if engine.GetPartNumberSum() != testDataAnswer {
+		t.Errorf("part num sum: Expected %d, received %d", testDataAnswer, engine.GetPartNumberSum())
 	}
 
-	if gears.GearRatioSum(engine) != testGearRatioAnswer {
-		t.Errorf("gear ratio: Expected %d, received %d", testGearRatioAnswer, gears.GearRatioSum(engine))
+	if engine.GetGearRatioSum() != testGearRatioAnswer {
+		t.Errorf("gear ratio: Expected %d, received %d", testGearRatioAnswer, engine.GetGearRatioSum())
 	}
 
 }
@@ -27,28 +27,43 @@ func TestThatItSolvesMyArbitraryExamples(t *testing.T) {
 	type testCase struct {
 		engineSchematic string
 		expectedSum     int
+		expectedRatio   int
 	}
 
 	cases := []testCase{
-		{"...", 0},
-		{"...\n...", 0},
-		{"...\n...\n...", 0},
-		{"1..", 0},
-		{".1.", 0},
-		{"..1", 0},
-		{"1.*", 0},
-		{".1*", 1},
-		{".*1", 1},
-		{"1..\n*..", 1},
-		{"1.&\n111\n111", 111},
-		{"1..\n420\n6*9", 420 + 6 + 9},
+		{"...", 0, 0},
+		{"...\n...", 0, 0},
+		{"...\n...\n...", 0, 0},
+		{"1..", 0, 0},
+		{".1.", 0, 0},
+		{"..1", 0, 0},
+		{"1.*", 0, 0},
+		{".1*", 1, 0},
+		{".*1", 1, 0},
+		{"1..\n*..", 1, 0},
+		{"1.&\n111\n111", 111, 0},
+		{"1..\n420\n6*9", 420 + 6 + 9, 0},
+		// Gear ratio ones
+		{"...\n...\n...", 0, 0},
+		{"...\n.*.\n...", 0, 0},
+		{"...\n***\n...", 0, 0},
+		{"***\n***\n***", 0, 0},
+		{"1..\n.*.\n..1", 2, 1},
+		{"3..\n.*.\n..2", 5, 6},
+		{"3..\n.*.\n222", 222 + 3, 666},
+		// invalid, 3 adjacent parts
+		{"3..\n.*.\n2.2", 2 + 2 + 3, 0},
 	}
 
 	for i, testCase := range cases {
 		engine := gears.NewEngine(testCase.engineSchematic)
 
-		if gears.PartNumberSum(engine) != testCase.expectedSum {
-			t.Errorf("Test #%d: Expected %d, received %d", i, testCase.expectedSum, gears.PartNumberSum(engine))
+		if engine.GetPartNumberSum() != testCase.expectedSum {
+			t.Errorf("Test #%d Part Numbers: Expected %d, received %d", i, testCase.expectedSum, engine.GetPartNumberSum())
+		}
+
+		if engine.GetGearRatioSum() != testCase.expectedRatio {
+			t.Errorf("Test #%d Gear Ratios: Expected %d, received %d", i, testCase.expectedSum, engine.GetGearRatioSum())
 		}
 	}
 }
