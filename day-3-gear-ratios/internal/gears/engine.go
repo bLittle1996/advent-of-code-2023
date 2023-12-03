@@ -6,11 +6,25 @@ import (
 )
 
 const invalidSymbol rune = '.'
+const gearSymbol rune = '*'
 
 type Engine struct {
 	rawSchematic string
 	Schematic    []string
-	PartNumbers  []int
+	parts        []part
+	gears        []gear
+}
+
+type part struct {
+	X     int
+	Y     int
+	Width int
+	Value int
+}
+
+type gear struct {
+	X int
+	Y int
 }
 
 func NewEngine(rawSchematic string) Engine {
@@ -21,12 +35,13 @@ func NewEngine(rawSchematic string) Engine {
 		Schematic:    lines,
 	}
 
-	engine.computePartNumbers()
+	engine.computeBitsAndBobs()
 
 	return engine
 }
 
-func (engine *Engine) computePartNumbers() {
+// Populates the parts and gears slices as well as the PartNumbers slice.
+func (engine *Engine) computeBitsAndBobs() {
 	if engine == nil {
 		return
 	}
@@ -43,15 +58,26 @@ func (engine *Engine) computePartNumbers() {
 
 			if isDigit(char) {
 				numStr += string(char)
+			} else if char == gearSymbol {
+				engine.gears = append(engine.gears, gear{
+					X: j,
+					Y: i,
+				})
 			}
 
 			// Can process a number if the character isn't a digit or we are at the end
 			if numStr != "" && (!isDigit(char) || j == len(line)-1) {
-				// Added a number and got to a non-number? Time to check if it's a part number!!!
-				num, err := strconv.Atoi(numStr)
+				num, _ := strconv.Atoi(numStr)
 
-				if err == nil && engine.isValidPartNumber(startsAtIndex, i, len(numStr)) {
-					engine.PartNumbers = append(engine.PartNumbers, num)
+				part := part{
+					X:     startsAtIndex,
+					Y:     i,
+					Width: len(numStr),
+					Value: num,
+				}
+
+				if engine.isValidPart(part) {
+					engine.parts = append(engine.parts, part)
 				}
 
 				// Reset numStr so we can build new numbers
@@ -61,19 +87,19 @@ func (engine *Engine) computePartNumbers() {
 	}
 }
 
-func (engine *Engine) isValidPartNumber(x int, y int, width int) bool {
-	rowWidth := len(engine.Schematic[y])
+func (engine *Engine) isValidPart(part part) bool {
+	rowWidth := len(engine.Schematic[part.Y])
 	rowCount := len(engine.Schematic)
 
-	canLookLeft := x > 0
-	canLookRight := x+(width-1) < rowWidth-1
-	canLookUp := y > 0
-	canLookDown := y < rowCount-1
+	canLookLeft := part.X > 0
+	canLookRight := part.X+(part.Width-1) < rowWidth-1
+	canLookUp := part.Y > 0
+	canLookDown := part.Y < rowCount-1
 
 	adjacentLeft, adjacentRight, adjacentUp, adjacentDown := false, false, false, false
 
-	leftBound := x
-	rightBound := x + width
+	leftBound := part.X
+	rightBound := part.X + part.Width
 
 	if canLookLeft {
 		leftBound -= 1
@@ -85,28 +111,28 @@ func (engine *Engine) isValidPartNumber(x int, y int, width int) bool {
 
 	// can look to the left on the rows
 	if canLookLeft {
-		s := engine.Schematic[y][leftBound:x]
+		s := engine.Schematic[part.Y][leftBound:part.X]
 
 		adjacentLeft = containsSymbol(s)
 	}
 
 	// can look to the right on the rights
 	if canLookRight {
-		s := engine.Schematic[y][x+width : rightBound]
+		s := engine.Schematic[part.Y][part.X+part.Width : rightBound]
 
 		adjacentRight = containsSymbol(s)
 	}
 
 	// Can look at previous row
 	if canLookUp {
-		s := engine.Schematic[y-1][leftBound:rightBound]
+		s := engine.Schematic[part.Y-1][leftBound:rightBound]
 
 		adjacentUp = containsSymbol(s)
 	}
 
 	// can look at next row
 	if canLookDown {
-		s := engine.Schematic[y+1][leftBound:rightBound]
+		s := engine.Schematic[part.Y+1][leftBound:rightBound]
 
 		adjacentDown = containsSymbol(s)
 	}
@@ -131,8 +157,8 @@ func containsSymbol(lineSegment string) bool {
 func PartNumberSum(engine Engine) int {
 	sum := 0
 
-	for _, partNum := range engine.PartNumbers {
-		sum += partNum
+	for _, part := range engine.parts {
+		sum += part.Value
 	}
 
 	return sum
