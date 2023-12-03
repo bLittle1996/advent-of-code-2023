@@ -8,13 +8,19 @@ import (
 )
 
 const testDataAnswer int = 4361
+const testGearRatioAnswer int = 467835
 
 func TestThatItSolvesTheExampleInput(t *testing.T) {
 	engine := gears.NewEngine(data.TestData)
 
 	if gears.PartNumberSum(engine) != testDataAnswer {
-		t.Errorf("Expected %d, received %d", testDataAnswer, gears.PartNumberSum(engine))
+		t.Errorf("part num sum: Expected %d, received %d", testDataAnswer, gears.PartNumberSum(engine))
 	}
+
+	if gears.GearRatioSum(engine) != testGearRatioAnswer {
+		t.Errorf("gear ratio: Expected %d, received %d", testGearRatioAnswer, gears.GearRatioSum(engine))
+	}
+
 }
 
 func TestThatItSolvesMyArbitraryExamples(t *testing.T) {

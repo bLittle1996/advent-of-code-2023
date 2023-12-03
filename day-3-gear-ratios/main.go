@@ -14,8 +14,6 @@ func main() {
 
 	engine := gears.NewEngine(data.Data)
 
-	sumOfPartnumbers := gears.PartNumberSum(engine)
-
-	fmt.Println(fmt.Sprintf("The sum of part numbers is %d", sumOfPartnumbers))
-
+	fmt.Println(fmt.Sprintf("The sum of part numbers is %d", gears.PartNumberSum(engine)))
+	fmt.Println(fmt.Sprintf("The combined gear ratio is %d", gears.GearRatioSum(engine)))
 }

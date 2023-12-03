@@ -1,6 +1,7 @@
 package gears
 
 import (
+	"math"
 	"strconv"
 	"strings"
 )
@@ -23,8 +24,9 @@ type part struct {
 }
 
 type gear struct {
-	X int
-	Y int
+	X     int
+	Y     int
+	Ratio int
 }
 
 func NewEngine(rawSchematic string) Engine {
@@ -35,13 +37,17 @@ func NewEngine(rawSchematic string) Engine {
 		Schematic:    lines,
 	}
 
-	engine.computeBitsAndBobs()
+	// Populate the parts and gears slices
+	engine.computeParts()
+	// At this point, we have only valid parts, but our gears might not be valid gears
+	// Let's validate them
+	engine.gears = getValidGears(engine)
 
 	return engine
 }
 
 // Populates the parts and gears slices as well as the PartNumbers slice.
-func (engine *Engine) computeBitsAndBobs() {
+func (engine *Engine) computeParts() {
 	if engine == nil {
 		return
 	}
@@ -85,6 +91,45 @@ func (engine *Engine) computeBitsAndBobs() {
 			}
 		}
 	}
+}
+
+// Takes the list of gears and compares it against parts, returning a new list of gears containing only ones that are adjacent to two parts.
+// Gear ratios are set in this function as well
+func getValidGears(engine Engine) []gear {
+	var validGears []gear
+
+	for _, gear := range engine.gears {
+		// We know the coordinate of a gear
+		// We also know the positition of every part in the engine
+		// We just need to compare indicies to see if it is adjacent or not
+		// If the difference in coordinates is within +/- 1, it is adjacent
+		// 1..   [0,0] -> [1,1] <- [2, 2]
+		// .*.
+		// ..1
+
+		adjacentParts := []part{}
+		for _, part := range engine.parts {
+			// Since a parts starting digit isn't guaranteed to be right next to the gear,
+			// We'll need to check each coordinate that the number occupies based
+			// off of it's width. offset.e. the number 100 takes up 3 possible spots that can be adjacent
+			// to the gear
+			for offset := 0; offset < part.Width; offset += 1 {
+				if areCoordinatesAdjacent(gear.X, gear.Y, part.X+offset, part.Y) {
+					adjacentParts = append(adjacentParts, part)
+					break
+				}
+			}
+		}
+
+		// A valid gear can only have 2 adjacent parts!
+		if len(adjacentParts) == 2 {
+			gear.Ratio = adjacentParts[0].Value * adjacentParts[1].Value
+
+			validGears = append(validGears, gear)
+		}
+	}
+
+	return validGears
 }
 
 func (engine *Engine) isValidPart(part part) bool {
@@ -162,4 +207,18 @@ func PartNumberSum(engine Engine) int {
 	}
 
 	return sum
+}
+
+func GearRatioSum(engine Engine) int {
+	sum := 0
+
+	for _, gear := range engine.gears {
+		sum += gear.Ratio
+	}
+
+	return sum
+}
+
+func areCoordinatesAdjacent(x1 int, y1 int, x2 int, y2 int) bool {
+	return math.Abs(float64(x1-x2)) <= 1 && math.Abs(float64(y1-y2)) <= 1
 }
