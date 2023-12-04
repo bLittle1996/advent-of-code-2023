@@ -70,14 +70,16 @@ func Test_New_ReturnsScratchcardForValidInput(t *testing.T) {
 
 func Test_NewPile_IsAbleToSolveTheExampleInput(t *testing.T) {
 	cards := scratchcard.NewPile(data.TestData)
-	pointSum := 0
 	expectedPoints := 13
+	expectedNumberOfCardsAfterProcessing := 30
 
-	for _, s := range cards {
-		pointSum += s.Points()
+	if cards.Points() != expectedPoints {
+		t.Errorf("points: expected %d, got %d", expectedPoints, cards.Points())
 	}
 
-	if pointSum != expectedPoints {
-		t.Errorf("expected %d, got %d", expectedPoints, pointSum)
+	processedPile := cards.Process()
+
+	if len(processedPile) != expectedNumberOfCardsAfterProcessing {
+		t.Errorf("process: expected %d cards, got %d cards", expectedNumberOfCardsAfterProcessing, len(processedPile))
 	}
 }
