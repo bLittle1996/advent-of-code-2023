@@ -83,7 +83,9 @@ func NewPile(cardsInput string) []Scratchcard {
 
 // parseCardId returns the number present in a string of the following format: Card %d
 func parseCardId(cardIdSegment string) (int, error) {
-	idParts := strings.Split(cardIdSegment, " ")
+	idParts := filterSlice(strings.Split(cardIdSegment, " "), func(segment string) bool {
+		return len(segment) > 0
+	})
 
 	if len(idParts) != 2 || idParts[0] != "Card" {
 		return 0, fmt.Errorf("cannot parse card id: %s", cardIdSegment)
