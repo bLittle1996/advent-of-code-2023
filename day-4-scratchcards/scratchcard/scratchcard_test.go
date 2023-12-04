@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/bLittle1996/advent-of-code-2023/scratchcards/data"
 	"github.com/bLittle1996/advent-of-code-2023/scratchcards/scratchcard"
 )
 
@@ -60,5 +61,19 @@ func Test_New_ReturnsScratchcardForValidInput(t *testing.T) {
 		if s.Points() != tc.expectedPoints {
 			t.Errorf("Test Case %d: expected points %d, got %d", i, tc.expectedPoints, s.Points())
 		}
+	}
+}
+
+func Test_NewPile_IsAbleToSolveTheExampleInput(t *testing.T) {
+	cards := scratchcard.NewPile(data.TestData)
+	pointSum := 0
+	expectedPoints := 13
+
+	for _, s := range cards {
+		pointSum += s.Points()
+	}
+
+	if pointSum != expectedPoints {
+		t.Errorf("expected %d, got %d", expectedPoints, pointSum)
 	}
 }
