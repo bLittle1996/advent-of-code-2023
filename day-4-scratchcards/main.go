@@ -12,5 +12,5 @@ func main() {
 
 	fmt.Println(fmt.Sprintf("From all %d scratchcards, you have a total of %d points!", len(scratchcards), scratchcards.Points()))
 	fmt.Println("But points aren't everything, in fact that's now how these scratchcards work at all!")
-	fmt.Println(fmt.Sprintf("You actually just win more scratchcards, %d in your case, and those scratchcards don't even win you anything useful! Ha!", len(scratchcards.Process())))
+	fmt.Println(fmt.Sprintf("You actually just win more scratchcards, %d in your case, and those scratchcards don't even win you anything useful! Ha!", scratchcards.Process()))
 }

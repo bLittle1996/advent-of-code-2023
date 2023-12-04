@@ -77,9 +77,9 @@ func Test_NewPile_IsAbleToSolveTheExampleInput(t *testing.T) {
 		t.Errorf("points: expected %d, got %d", expectedPoints, cards.Points())
 	}
 
-	processedPile := cards.Process()
+	processedPileCount := cards.Process()
 
-	if len(processedPile) != expectedNumberOfCardsAfterProcessing {
-		t.Errorf("process: expected %d cards, got %d cards", expectedNumberOfCardsAfterProcessing, len(processedPile))
+	if processedPileCount != expectedNumberOfCardsAfterProcessing {
+		t.Errorf("process: expected %d cards, got %d cards", expectedNumberOfCardsAfterProcessing, processedPileCount)
 	}
 }

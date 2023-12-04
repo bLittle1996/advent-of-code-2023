@@ -1,6 +1,8 @@
 package scratchcard
 
-import "strings"
+import (
+	"strings"
+)
 
 // A Pile is a bunch of Scratchcards
 type Pile []Scratchcard
@@ -18,8 +20,48 @@ func (p Pile) Points() int {
 
 // Process calculates the new pile of scratchcards you will have received based off the the copy winning rules outlined in part 2 of the puzzle.
 //
+// # This version is way faster than OldProcess
+//
 // According the puzzle, there can never be a case where a card can win you a copy of a non-existant card.
-func (p Pile) Process() Pile {
+func (p Pile) Process() int {
+	totalCardCount := 0
+	scWinCounts := map[int]int{}
+
+	// Iterate over the pile in reverse
+	// Because the last card can never be a winner, and cards can only
+	// award bonus cards that appear after them - we can figure out
+	// how many cards a given id will award in advance. We can then step back
+	// over the pile, and continue to add cards based off of the number of winners it has
+	for i := len(p) - 1; i >= 0; i -= 1 {
+		sc := p[i]
+		// This is the number of cards this scratch card will add to the deck as bonus cards
+		scWinCount := sc.WinningCount()
+		bonusCardsAwarded := scWinCount
+
+		// For each winning card, we can then check how many each copy it awards
+		// should add to the total number of cards
+		for j := 1; j <= scWinCount; j += 1 {
+			// If we've calculated the cards that come after this one before, we can add how many cards they add to our total
+			// These should always be set, because we are going _backwards_ through the pile
+			if n, found := scWinCounts[sc.Id+j]; found {
+				bonusCardsAwarded += n
+			}
+		}
+
+		scWinCounts[sc.Id] = bonusCardsAwarded
+		totalCardCount += 1 + bonusCardsAwarded // always account for this one
+
+	}
+
+	return totalCardCount
+}
+
+// OldProcess calculates the new pile of scratchcards you will have received based off the the copy winning rules outlined in part 2 of the puzzle.
+//
+// This version took seconds to run on my PC (Ryzen 7800X3D + 32GB RAM)
+//
+// According the puzzle, there can never be a case where a card can win you a copy of a non-existant card.
+func (p Pile) OldProcess() Pile {
 	pMap := p.ToMap()
 	newPile := Pile{}
 	newPile = append(newPile, p...) // copy original cards in
