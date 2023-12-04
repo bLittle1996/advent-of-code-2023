@@ -12,7 +12,7 @@ type Scratchcard struct {
 
 func (s Scratchcard) Points() int {
 	winningNumbers := map[int]bool{}
-	winningNumberCount := 0
+	winnersCount := 0 // how many of the scratch cards numbers were winning numbers
 
 	// Assign to a map for O(1) lookup rather than having to iterate over the numbers for each number in the card
 	for _, n := range s.WinningNumbers {
@@ -21,13 +21,13 @@ func (s Scratchcard) Points() int {
 
 	for _, n := range s.CardNumbers {
 		if isWinning := winningNumbers[n]; isWinning {
-			winningNumberCount += 1
+			winnersCount += 1
 		}
 	}
 
-	if winningNumberCount == 0 {
+	if winnersCount == 0 {
 		return 0
 	}
 
-	return int(math.Pow(2, float64(winningNumberCount-1)))
+	return int(math.Pow(2, float64(winnersCount-1)))
 }
