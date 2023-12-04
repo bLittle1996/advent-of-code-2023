@@ -31,3 +31,19 @@ func (s Scratchcard) Points() int {
 
 	return int(math.Pow(2, float64(winnersCount-1)))
 }
+
+// New creates a Scratchcard based off of input in the following format:
+//
+// Card Id: WinningNumbers | CardNumbers
+//
+// i.e. `Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53`
+func New(cardInput string) Scratchcard {
+	s := Scratchcard{}
+
+	return s
+}
+
+// NewPile functions as New but processes multiple lines of input at once.
+func NewPile(cardsInput string) []Scratchcard {
+	return []Scratchcard{}
+}

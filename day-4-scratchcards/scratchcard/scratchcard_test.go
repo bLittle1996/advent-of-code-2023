@@ -3,7 +3,7 @@ package scratchcard_test
 import (
 	"testing"
 
-	"github.com/bLittle1996/advent-of-code-2023/scratchcards/internal/scratchcard"
+	"github.com/bLittle1996/advent-of-code-2023/scratchcards/scratchcard"
 )
 
 func TestThatItSolvesTheExampleScratchcard(t *testing.T) {
