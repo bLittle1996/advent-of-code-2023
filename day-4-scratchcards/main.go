@@ -9,11 +9,6 @@ import (
 
 func main() {
 	scratchcards := scratchcard.NewPile(data.Data)
-	pointSum := 0
 
-	for _, sc := range scratchcards {
-		pointSum += sc.Points()
-	}
-
-	fmt.Println(fmt.Sprintf("From all %d cards, you have a total of %d points!", len(scratchcards), pointSum))
+	fmt.Println(fmt.Sprintf("From all %d cards, you have a total of %d points!", len(scratchcards), scratchcards.Points()))
 }

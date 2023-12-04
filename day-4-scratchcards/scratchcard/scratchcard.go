@@ -84,23 +84,6 @@ func New(cardInput string) (Scratchcard, error) {
 	return s, nil
 }
 
-// NewPile functions as New but processes multiple lines of input at once.
-//
-// If an error is encountered when parsing a specific line, it is ignored.
-// This means it is possible to have an empty slice returned, if every line is invalid.
-func NewPile(cardsInput string) []Scratchcard {
-	cardPile := []Scratchcard{}
-	lines := strings.Split(strings.Trim(cardsInput, "\n"), "\n")
-
-	for _, line := range lines {
-		if s, err := New(line); err == nil { // if no error
-			cardPile = append(cardPile, s)
-		}
-	}
-
-	return cardPile
-}
-
 // parseCardId returns the number present in a string of the following format: Card %d
 func parseCardId(cardIdSegment string) (int, error) {
 	idParts := filterSlice(strings.Split(cardIdSegment, " "), func(segment string) bool {
