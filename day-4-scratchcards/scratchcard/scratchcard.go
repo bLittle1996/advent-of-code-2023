@@ -15,7 +15,8 @@ type Scratchcard struct {
 	CardNumbers []int
 }
 
-func (s Scratchcard) Points() int {
+// WinningCount returns the count of CardNumbers that are present in WinningNumbers
+func (s Scratchcard) WinningCount() int {
 	winningNumbers := map[int]bool{}
 	winnersCount := 0 // how many of the scratch cards numbers were winning numbers
 
@@ -30,11 +31,30 @@ func (s Scratchcard) Points() int {
 		}
 	}
 
-	if winnersCount == 0 {
-		return 0
+	return winnersCount
+}
+
+// Points uses made up rules to figure out how many points you won on a scratch card.
+// This solves puzzle 1, but doesn't follow the true rules of the scratchcard!
+func (s Scratchcard) Points() int {
+	winnersCount := s.WinningCount()
+	return int(math.Pow(2, float64(winnersCount-1)))
+}
+
+// WinningCardIds returns a list of ids corresponding to other scratchcards.
+// When a scratchcard scores a "point", it instead gives you a copy of another scratchcard
+// whose id is equal to the id of the following cards.
+//
+// i.e. if Card 1 has 4 winners, it gives you the ids []int{2,3,4,5} back, indicating copies of scratchcards won
+func (s Scratchcard) WinningCardIds() []int {
+	winningCount := s.WinningCount()
+	ids := []int{}
+
+	for i := 1; i <= winningCount; i += 1 {
+		ids = append(ids, s.Id+i)
 	}
 
-	return int(math.Pow(2, float64(winnersCount-1)))
+	return ids
 }
 
 // New creates a Scratchcard based off of input in the following format:

@@ -19,6 +19,10 @@ func TestThatItSolvesTheExampleScratchcard(t *testing.T) {
 	if scratchcard.Points() != expectedPoints {
 		t.Errorf("Expected %d, received %d", expectedPoints, scratchcard.Points())
 	}
+
+	if !reflect.DeepEqual(scratchcard.WinningCardIds(), []int{2, 3, 4, 5}) {
+		t.Errorf("Expected winning card ids 2, 3, 4,and 5, got %v", scratchcard.WinningCardIds())
+	}
 }
 
 func Test_New_ReturnsScratchcardForValidInput(t *testing.T) {
